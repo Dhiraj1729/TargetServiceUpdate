@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hsm-demo
+  namespace: hsm-system
+spec:
+  clusterIP: None
+  selector:
+    app: hsm-demo
+  ports:
+    - name: http
+      port: 8080
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hsm-demo
+  namespace: hsm-system
+spec:
+  serviceName: hsm-demo
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hsm-demo
+  template:
+    metadata:
+      labels:
+        app: hsm-demo
+    spec:
+      automountServiceAccountToken: false
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: hsm-demo
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: http
+          image: busybox:1.37.0
+          command: ["sh", "-c", "echo $HOSTNAME > /www/index.html; exec httpd -f -p 8080 -h /www"]
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+              memory: 8Mi
+            limits:
+              cpu: 100m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: www
+              mountPath: /www
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+      volumes:
+        - name: www
+          emptyDir: {}
