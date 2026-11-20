@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # HSM — Service Target Manager
 
 A lightweight Go REST service that updates Kubernetes Service routing when an
@@ -392,3 +393,7 @@ the core logic and [internal/api/handlers.go](internal/api/handlers.go) for requ
 handling. The module path `github.com/Dhiraj1729/TargetServiceUpdate` is a placeholder
 until a repository remote is chosen. Deployment currently uses plain Kubernetes
 manifests; the reserved Helm directory does not contain a usable chart yet.
+=======
+# TargetServiceUpdate
+Updates the Workload in Kubernetes services when there is a failover.
+>>>>>>> origin/main
